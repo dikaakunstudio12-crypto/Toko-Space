@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toko Space - Jual Minuman</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        header {
+            text-align: center;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        header h1 { font-size: 2.5em; margin: 0; }
+        header p { font-size: 1.2em; margin: 10px 0; }
+        .product-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .product {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: 250px;
+        }
+        .product:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+        .product img {
+            width: 150px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .product h3 { font-size: 1.4em; margin: 10px 0; }
+        .product p { font-size: 1.1em; color: #666; }
+        #cart, #payment, #scanner, #dashboard {
+            margin-top: 20px;
+            padding: 25px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #191a1b 0%, #080808 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 5px;
+        }
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        #dashboard { display: none; }
+        .transaction-list {
+            list-style: none;
+            padding: 0;
+        }
+        .transaction-list li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            background: #f9f9f9;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+        footer button {
+            background: linear-gradient(135deg, #020202 0%, #222122 100%);
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1><i class="fas fa-store"></i> Toko Space</h1>
+        <p>Selamat datang di Toko Space. Pindai QR kode produk untuk melakukan pembelian.</p>
+        <button onclick="toggleDashboard()"><i class="fas fa-chart-line"></i> Akses Dashboard Keuangan</button>
+    </header>
+    
+    <section id="dashboard">
+        <h2><i class="fas fa-money-bill-wave"></i> Dashboard Keuangan</h2>
+        <p><strong>Total Pendapatan: Rp <span id="total-revenue">0</span></strong></p>
+        <h3>Riwayat Transaksi</h3>
+        <ul id="transaction-list" class="transaction-list"></ul>
+        <button onclick="resetData()"><i class="fas fa-trash"></i> Reset Data</button>
+        <button onclick="hideDashboard()"><i class="fas fa-times"></i> Tutup Dashboard</button>
+    </section>
+    
+    <section id="products">
+        <h2><i class="fas fa-list"></i> Daftar Produk Minuman</h2>
+        <div class="product-list">
+            <div class="product" data-id="1">
+                <img src="images/Air-Mineral.jpg" alt="Air Mineral">
+                <h3>Air Mineral</h3>
+                <p>Harga: Rp 15.000</p>
+                <div id="qr-1"></div>
+            </div>
+            <div class="product" data-id="2">
+                <img src="images/Teh-Pucuk.jpg" alt="Teh Pucuk">
+                <h3>Teh Pucuk</h3>
+                <p>Harga: Rp 10.000</p>
+                <div id="qr-2"></div>
+            </div>
+            <div class="product" data-id="3">
+                <img src="images/Floridina-Orange.jpg" alt="Floridina Orange">
+                <h3>Floridina Orange</h3>
+                <p>Harga: Rp 12.000</p>
+                <div id="qr-3"></div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="cart">
+        <h2><i class="fas fa-shopping-cart"></i> Keranjang Belanja</h2>
+        <ul id="cart-items"></ul>
+        <p>Total: Rp <span id="total">0</span></p>
+        <button onclick="checkout()"><i class="fas fa-credit-card"></i> Lanjut ke Pembayaran</button>
+    </section>
+    
+    <section id="payment" style="display:none;">
+        <h2><i class="fas fa-wallet"></i> Pilih Metode Pembayaran</h2>
+        <button onclick="payQRIS()"><i class="fas fa-qrcode"></i> Pembayaran QRIS</button>
+        <button onclick="payCash()"><i class="fas fa-money-bill"></i> Pembayaran Tunai</button>
+        <div id="qris-qr" style="display:none;"></div>
+        <div id="cash-input" style="display:none;">
+            <label>Masukkan jumlah pembayaran tunai: Rp <input type="number" id="cash-amount"></label>
+            <button onclick="confirmCash()"><i class="fas fa-check"></i> Konfirmasi Pembayaran</button>
+        </div>
+    </section>
+    
+    <section id="scanner" style="display:none;">
+        <h2><i class="fas fa-camera"></i> Pemindai QR Kode Produk</h2>
+        <video id="video" width="300" height="200"></video>
+        <button onclick="startScan()"><i class="fas fa-play"></i> Mulai Pemindaian</button>
+        <p id="scan-result"></p>
+    </section>
+    
+    <footer>
+        <button onclick="showScanner()"><i class="fas fa-qrcode"></i> Pindai QR Kode Produk</button>
+    </footer>
+    
+    <script>
+        let cart = [];
+        let total = 0;
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        let totalRevenue = parseInt(localStorage.getItem('totalRevenue')) || 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDashboard();
+            const products = document.querySelectorAll('.product');
+            products.forEach(product => {
+                const id = product.dataset.id;
+                const qrDiv = document.getElementById(`qr-${id}`);
+                QRCode.toCanvas(qrDiv, `product-${id}`, { width: 100 });
+            });
+        });
+
+        function toggleDashboard() {
+            const dash = document.getElementById('dashboard');
+            dash.style.display = dash.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function hideDashboard() {
+            document.getElementById('dashboard').style.display = 'none';
+        }
+
+        function updateDashboard() {
+            document.getElementById('total-revenue').textContent = totalRevenue;
+            const list = document.getElementById('transaction-list');
+            list.innerHTML = '';
+            transactions.forEach(trans => {
+                const li = document.createElement('li');
+                li.textContent = `${trans.date} - ${trans.items.join(', ')} - Rp ${trans.total}`;
+                list.appendChild(li);
+            });
+        }
+
+        function resetData() {
+            if (confirm('Apakah Anda yakin ingin mereset semua data keuangan?')) {
+                transactions = [];
+                totalRevenue = 0;
+                localStorage.removeItem('transactions');
+                localStorage.removeItem('totalRevenue');
+                updateDashboard();
+            }
+        }
+
+        function addToCart(id) {
+            const product = document.querySelector(`[data-id="${id}"]`);
+            const name = product.querySelector('h3').textContent;
+            const price = parseInt(product.querySelector('p').textContent.replace('Harga: Rp ', '').replace('.', ''));
+            cart.push({ name, price });
+            total += price;
+            updateCart();
+            alert(`Produk ${name} - Rp ${price} berhasil ditambahkan ke keranjang!`);
+        }
+
+        function updateCart() {
+            const cartItems = document.getElementById('cart-items');
+            cartItems.innerHTML = '';
+            cart.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = `${item.name} - Rp ${item.price}`;
+                li.style.padding = '5px';
+                li.style.background = '#f0f0f0';
+                li.style.borderRadius = '5px';
+                li.style.marginBottom = '5px';
+            });
+            document.getElementById('total').textContent = total;
+        }
+
+        function checkout() {
+            document.getElementById('cart').style.display = 'none';
+            document.getElementById('payment').style.display = 'block';
+        }
+
+        function payQRIS() {
+            document.getElementById('qris-qr').style.display = 'block';
+            QRCode.toCanvas(document.getElementById('qris-qr'), 'qris-payment-total-' + total, { width: 200 });
+            alert('Silakan pindai QR kode berikut untuk menyelesaikan pembayaran QRIS. Total: Rp ' + total);
+            completePayment();
+        }
+
+        function payCash() {
+            document.getElementById('cash-input').style.display = 'block';
+        }
+
+        function confirmCash() {
+            const amount = parseInt(document.getElementById('cash-amount').value);
+            if (amount >= total) {
+                alert(`Pembayaran tunai berhasil! Kembalian: Rp ${amount - total}`);
+                completePayment();
+            } else {
+                alert('Jumlah pembayaran tunai tidak mencukupi.');
+            }
+        }
+
+        function completePayment() {
+            const items = cart.map(item => item.name);
+            const trans = { date: new Date().toLocaleString(), items, total };
+            transactions.push(trans);
+            totalRevenue += total;
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            localStorage.setItem('totalRevenue', totalRevenue);
+            updateDashboard();
+            cart = []; total = 0; updateCart();
+            document.getElementById('payment').style.display = 'none';
+            document.getElementById('cart').style.display = 'block';
+        }
+
+        function showScanner() {
+            document.getElementById('scanner').style.display = 'block';
+        }
+
+        function startScan() {
+            const video = document.getElementById('video');
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then(stream => {
+                    video.srcObject = stream;
+                    video.play();
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const scan = () => {
+                        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                            canvas.width = video.videoWidth;
+                            canvas.height = video.videoHeight;
+                            ctx.drawImage(video, 0, 0);
+                            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                            const code = jsQR(imageData.data, imageData.width, imageData.height);
+                            if (code) {
+                                const scannedData = code.data;
+                                const productId = scannedData.split('-')[1];
+                                const product = document.querySelector(`[data-id="${productId}"]`);
+                                if (product) {
+                                    const name = product.querySelector('h3').textContent;
+                                    const price = product.querySelector('p').textContent;
+                                    document.getElementById('scan-result').textContent = `Produk ditemukan: ${name} - ${price}`;
+                                    addToCart(productId);
+                                } else {
+                                    document.getElementById('scan-result').textContent = 'Produk tidak ditemukan.';
+                                }
+                                stream.getTracks().forEach(track => track.stop());
+                            }
+                        }
+                        requestAnimationFrame(scan);
+                    };
+                    scan();
+                })
+                .catch(err => {
+                    alert('Kesalahan akses kamera: ' + err.message);
+                });
+        }
+    </script>
+</body>
+</html>
